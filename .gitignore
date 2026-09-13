@@ -1,0 +1,20 @@
+.DS_Store
+.env
+.idea/
+.vscode/
+
+# Go
+bin/
+coverage.out
+coverage.html
+*.test
+
+# Web
+web/node_modules/
+web/dist/
+web/coverage/
+web/*.tsbuildinfo
+
+# Runtime data
+data/
+tmp/

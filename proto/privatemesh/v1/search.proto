@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package privatemesh.v1;
+
+import "google/protobuf/duration.proto";
+
+option go_package = "github.com/ayansaiyad/privatemesh/gen/go/privatemesh/v1;privatemeshv1";
+
+service SearchService {
+  rpc Search(SearchRequest) returns (stream SearchResponse);
+  rpc GetDocument(GetDocumentRequest) returns (GetDocumentResponse);
+}
+
+enum RetrievalMode {
+  RETRIEVAL_MODE_UNSPECIFIED = 0;
+  RETRIEVAL_MODE_LEXICAL = 1;
+  RETRIEVAL_MODE_VECTOR = 2;
+  RETRIEVAL_MODE_HYBRID = 3;
+  RETRIEVAL_MODE_AUTO = 4;
+}
+
+message SearchRequest {
+  string request_id = 1;
+  string query = 2;
+  RetrievalMode mode = 3;
+  uint32 limit = 4;
+  repeated string collection_ids = 5;
+  google.protobuf.Duration latency_budget = 6;
+  Principal principal = 7;
+}
+
+message Principal {
+  string subject = 1;
+  repeated string groups = 2;
+  repeated string scopes = 3;
+}
+
+message SearchResult {
+  string document_id = 1;
+  string collection_id = 2;
+  string node_id = 3;
+  string title = 4;
+  string snippet = 5;
+  double score = 6;
+  uint32 rank = 7;
+}
+
+message SearchResponse {
+  string request_id = 1;
+  repeated SearchResult results = 2;
+  repeated string searched_shard_ids = 3;
+  repeated string unavailable_shard_ids = 4;
+  bool complete = 5;
+}
+
+message GetDocumentRequest {
+  string request_id = 1;
+  string document_id = 2;
+  string collection_id = 3;
+  Principal principal = 4;
+}
+
+message GetDocumentResponse {
+  string document_id = 1;
+  string media_type = 2;
+  bytes content = 3;
+}
+

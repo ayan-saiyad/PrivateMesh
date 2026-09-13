@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package privatemesh.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/ayansaiyad/privatemesh/gen/go/privatemesh/v1;privatemeshv1";
+
+service ControlPlaneService {
+  rpc RegisterNode(RegisterNodeRequest) returns (RegisterNodeResponse);
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+  rpc DeregisterNode(DeregisterNodeRequest) returns (DeregisterNodeResponse);
+}
+
+message NodeDescriptor {
+  string node_id = 1;
+  string address = 2;
+  repeated string collection_ids = 3;
+  map<string, string> labels = 4;
+}
+
+message RegisterNodeRequest {
+  NodeDescriptor node = 1;
+}
+
+message RegisterNodeResponse {
+  string lease_id = 1;
+  google.protobuf.Timestamp expires_at = 2;
+  uint64 registry_revision = 3;
+}
+
+message HeartbeatRequest {
+  string node_id = 1;
+  string lease_id = 2;
+  uint64 applied_log_offset = 3;
+}
+
+message HeartbeatResponse {
+  google.protobuf.Timestamp expires_at = 1;
+  uint64 registry_revision = 2;
+}
+
+message DeregisterNodeRequest {
+  string node_id = 1;
+  string lease_id = 2;
+}
+
+message DeregisterNodeResponse {}

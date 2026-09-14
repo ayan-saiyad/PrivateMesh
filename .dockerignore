@@ -1,0 +1,12 @@
+.git
+.github
+.idea
+.vscode
+bin
+data
+tmp
+web/node_modules
+web/dist
+coverage.out
+coverage.html
+

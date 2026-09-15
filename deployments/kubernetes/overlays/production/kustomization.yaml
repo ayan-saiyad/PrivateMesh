@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+patches:
+  - path: runtime.yaml
+  - path: coordinator.yaml
+  - path: search-node-a.yaml
+  - path: search-node-b.yaml

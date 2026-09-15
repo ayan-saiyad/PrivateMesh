@@ -1,65 +1,66 @@
 # Development environment
 
-## Supported path
-
-The supported development environment uses Docker so compiler, linter, and protocol-tool versions
-remain consistent across machines and CI.
-
-Pinned tools:
+The supported toolchain runs through Docker so local checks and CI use the same compiler, linter,
+protocol generator, and frontend runtime.
 
 | Tool | Version | Purpose |
 |---|---:|---|
-| Go | 1.26.5 | Backend services and search core |
-| Node.js | 24.21.0 LTS | Web client toolchain |
+| Go | 1.26.5 | Services, search core, tests, and operational tools |
+| Node.js | 24.21.0 | Web client toolchain |
 | Buf | 1.72.0 | Protobuf linting and generation |
 | golangci-lint | 2.12.2 | Go static analysis |
 
-## First setup
+## Setup
 
 ```bash
 cp .env.example .env
 make init
 ```
 
-`make init` installs locked web dependencies into a Docker volume and then runs all quality gates.
-Keeping container dependencies in that volume prevents Linux packages from overwriting a local
-macOS `node_modules` directory.
+`make init` installs locked web dependencies into a Docker volume and runs the complete quality
+gate. Keeping those dependencies in a Linux volume avoids overwriting a local macOS
+`node_modules` directory.
 
-## Common commands
+## Commands
 
 | Command | Effect |
 |---|---|
-| `make fmt` | Format Go and web source files |
-| `make test` | Run backend tests with the race detector and frontend tests |
+| `make fmt` | Format Go and web sources |
+| `make test` | Run Go tests with the race detector and frontend tests |
 | `make lint` | Run Go, TypeScript, and protobuf linters |
-| `make proto` | Regenerate Go protocol bindings |
-| `make build` | Build backend binaries and the frontend bundle |
-| `make check` | Run the complete local quality suite |
-| `make dev` | Run the coordinator and two search nodes |
-| `make down` | Stop the local environment without deleting node data |
+| `make proto` | Regenerate Go protocol bindings and tidy modules |
+| `make build` | Build both services and the web bundle |
+| `make check` | Run formatting, vet, lint, tests, builds, and Compose validation |
+| `make dev` | Build and run the complete local environment in the foreground |
+| `make down` | Stop it without deleting persistent data |
+| `make load-test` | Run concurrent searches against the local coordinator |
+| `make chaos-test` | Verify partial results during node loss and recovery |
+| `make recovery-test` | Verify a committed document survives restart |
+| `make benchmark-million` | Run the deterministic index benchmark |
+| `make kubernetes-config` | Render both Kubernetes overlays |
 
-## Configuration
+The load and benchmark counts can be overridden without editing files:
 
-Backend configuration uses environment variables prefixed with `PRIVATEMESH_`. Copy
-`.env.example` to `.env` for local overrides. The `.env` file is ignored by Git.
-
-Configuration is validated during process startup. Invalid addresses, durations, and log levels
-must prevent a service from starting.
+```bash
+make load-test LOAD_TEST_REQUESTS=5000 LOAD_TEST_CONCURRENCY=50
+make benchmark-million BENCHMARK_DOCUMENTS=250000 BENCHMARK_QUERIES=100
+```
 
 ## Local ports
 
 | Process | Port |
 |---|---:|
-| Coordinator | 18080 |
-| Search node A | 18091 |
-| Search node B | 18092 |
-| Vite development server | 3000 |
+| Web | 18000 |
+| Coordinator HTTP / gRPC | 18080 / 18081 |
+| Search node A HTTP / gRPC | 18091 / 18093 |
+| Search node B HTTP / gRPC | 18092 / 18094 |
+| Grafana | 13000 |
+| Prometheus | 19090 |
+| Jaeger | 16686 |
 
-These are host ports. Containers continue to listen on `8080` for the coordinator and `8090` for
-search nodes. Host-port overrides are available in `.env.example`.
+Host ports can be changed in `.env`. Containers keep their fixed internal ports.
 
 ## Protocol changes
 
-Edit files under `proto/privatemesh/v1`, run `make proto`, then run `make check`. Once the first
-released protocol exists, CI will compare changes against the `main` branch with Buf's breaking
-change detector.
+Edit `proto/privatemesh/v1`, run `make proto`, and then run `make check`. Generated bindings are
+committed so CI can reject stale protocol output.

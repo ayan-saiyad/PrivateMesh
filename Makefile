@@ -58,7 +58,7 @@ proto: ## Generate Go bindings from protobuf contracts.
 
 .PHONY: build
 build: ## Build service binaries and the web client.
-	docker run --rm -v "$(ROOT_DIR):/workspace" -w /workspace $(GO_IMAGE) sh -c 'mkdir -p bin && go build -trimpath -o bin/coordinator ./cmd/coordinator && go build -trimpath -o bin/search-node ./cmd/search-node'
+	docker run --rm -v "$(ROOT_DIR):/workspace" -w /workspace $(GO_IMAGE) sh -c 'mkdir -p bin && go build -buildvcs=false -trimpath -o bin/coordinator ./cmd/coordinator && go build -buildvcs=false -trimpath -o bin/search-node ./cmd/search-node'
 	$(NODE_RUN) npm run build
 
 .PHONY: check
@@ -96,3 +96,12 @@ chaos-test: ## Verify explicit partial results and node rejoining after process 
 .PHONY: recovery-test
 recovery-test: ## Verify WAL recovery across a search-node restart.
 	./scripts/recovery-test.sh
+
+.PHONY: kubernetes-config
+kubernetes-config: ## Render the demonstration and production Kubernetes configurations.
+	kubectl kustomize deployments/kubernetes/overlays/demo >/dev/null
+	kubectl kustomize deployments/kubernetes/overlays/production >/dev/null
+
+.PHONY: deployment-keys
+deployment-keys: ## Generate a Kubernetes Secret manifest on standard output.
+	@docker run --rm -v "$(ROOT_DIR):/workspace" -w /workspace $(GO_IMAGE) go run ./cmd/keygen -format kubernetes

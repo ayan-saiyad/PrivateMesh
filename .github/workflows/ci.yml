@@ -60,6 +60,11 @@ jobs:
       - name: Check generated bindings
         run: git diff --exit-code -- gen/go
 
+      - name: Render Kubernetes deployments
+        run: |
+          kubectl kustomize deployments/kubernetes/overlays/demo >/dev/null
+          kubectl kustomize deployments/kubernetes/overlays/production >/dev/null
+
   web:
     runs-on: ubuntu-latest
     defaults:

@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coordinator
+spec:
+  template:
+    spec:
+      containers:
+        - name: coordinator
+          env:
+            - name: PRIVATEMESH_OIDC_ISSUER
+              valueFrom:
+                configMapKeyRef:
+                  name: privatemesh-runtime
+                  key: oidc-issuer
+            - name: PRIVATEMESH_OIDC_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: privatemesh-runtime
+                  key: oidc-client-id
+            - name: PRIVATEMESH_PRINCIPAL_SIGNING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: privatemesh-security
+                  key: principal-signing-key

@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: search-node-b
+spec:
+  template:
+    spec:
+      containers:
+        - name: search-node
+          env:
+            - name: PRIVATEMESH_PRINCIPAL_VERIFYING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: privatemesh-security
+                  key: principal-verifying-key
+            - name: PRIVATEMESH_AUDIT_FINGERPRINT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: privatemesh-security
+                  key: audit-fingerprint-key

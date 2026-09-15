@@ -1,93 +1,31 @@
-# Roadmap
+# Build status
 
-Each phase must satisfy its acceptance criteria before work starts on the next one.
+The planned implementation is complete for the v1.0.0 project release.
 
-## Phase 0: Foundation
+## Search and storage
 
-- Runnable coordinator and search-node processes
-- Health, readiness, and build-information endpoints
-- Versioned protobuf contracts
-- Containerized development and quality tooling
-- Minimal web application shell
-- CI for formatting, linting, tests, builds, and protocol validation
-- Initial architecture and threat-model documents
+- [x] Unicode normalization, inverted indexing, BM25, and deterministic top-k retrieval
+- [x] Exact vector search, HNSW, reciprocal-rank fusion, and recall evaluation
+- [x] Immutable checksummed segments with atomic publication and merging
+- [x] Committed write-ahead log with replay, truncation, corruption detection, and recovery tests
 
-## Phase 1: In-memory lexical retrieval
+## Distribution and security
 
-- Deterministic tokenizer and normalization pipeline
-- In-memory inverted index
-- Boolean AND/OR query execution
-- Document ingestion and deletion
-- Unit tests for Unicode, duplicate terms, and empty documents
+- [x] Lease-backed node registry and collection catalog
+- [x] Deadline-aware fan-out, cancellation, streaming updates, and global result merging
+- [x] Explicit partial coverage when nodes are unavailable
+- [x] Primary election, replicated log offsets, WAL catch-up, and snapshot installation
+- [x] OIDC verification and short-lived signed principal propagation
+- [x] Node-local collection and document policy enforcement
+- [x] Content-free authorization audit records
+- [x] Health- and deadline-aware lexical, vector, and hybrid planning
 
-## Phase 2: BM25 and relevance evaluation
+## Delivery and operations
 
-- BM25 scoring implemented in the search core
-- Field-aware title and body scoring
-- Deterministic top-k behavior
-- Small labeled relevance corpus and NDCG evaluation
-- Baseline latency and allocation benchmarks
-
-## Phase 3: Persistent index segments
-
-- Immutable segment file format
-- Checksums and versioned headers
-- Delta-encoded postings
-- Atomic segment publication
-- Segment merge policy and crash-safe recovery tests
-
-## Phase 4: Write-ahead log
-
-- Append, commit, replay, and truncation semantics
-- Recovery after forced termination
-- Idempotent document operations
-- Corruption detection and bounded recovery time
-
-## Phase 5: Vector and hybrid retrieval
-
-- Local embedding-service contract
-- Exact vector-search baseline
-- HNSW construction and querying
-- Reciprocal-rank fusion
-- Recall and latency comparison against exact search
-
-## Phase 6: Distributed query execution
-
-- Node registration and lease-backed heartbeats
-- Shard catalog and query fan-out
-- Deadline propagation and cancellation
-- Streaming partial results
-- Global top-k merging
-
-## Phase 7: Replication and recovery
-
-- Primary-replica write protocol
-- Committed log offsets
-- Lease-based primary election
-- Replica catch-up from WAL and snapshots
-- Fault-injection tests for partitions and process loss
-
-## Phase 8: Identity and authorization
-
-- OIDC login and signed principal propagation
-- Collection and document policy model
-- Local authorization enforcement
-- Audit events that exclude document and query content
-- Negative authorization tests
-
-## Phase 9: Adaptive query planning
-
-- Per-strategy quality and latency baselines
-- Planner feature extraction
-- Deadline- and health-aware strategy selection
-- Comparison with always-lexical, always-vector, and always-hybrid policies
-
-## Phase 10: Operations and release
-
-- OpenTelemetry traces and metrics
-- Prometheus and Grafana dashboards
-- Load, chaos, and recovery test suites
-- Reproducible million-document benchmark
-- Kubernetes deployment and operator runbook
-- Public demonstration and versioned release
-
+- [x] Search API and browser application connected to a live two-node topology
+- [x] OpenTelemetry traces and Prometheus metrics without protected payload attributes
+- [x] Provisioned Grafana and Jaeger views
+- [x] Concurrent load, node-loss, and durable-recovery checks
+- [x] Reproducible one-million-document benchmark
+- [x] Compose and Kubernetes deployments with an operator runbook
+- [x] Automated validation and version-tagged container publishing

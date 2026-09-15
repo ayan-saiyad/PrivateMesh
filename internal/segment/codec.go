@@ -43,12 +43,13 @@ type Mutation struct {
 
 // Upsert creates a document replacement mutation.
 func Upsert(document search.Document) Mutation {
+	document.ID = strings.TrimSpace(document.ID)
 	return Mutation{Document: document}
 }
 
 // Delete creates a document deletion mutation.
 func Delete(id string) Mutation {
-	return Mutation{Document: search.Document{ID: id}, Deleted: true}
+	return Mutation{Document: search.Document{ID: strings.TrimSpace(id)}, Deleted: true}
 }
 
 type record struct {

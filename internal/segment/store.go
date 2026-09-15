@@ -47,6 +47,7 @@ func (s *Store) Publish(mutations []Mutation) (uint64, error) {
 	}
 	records := make([]record, 0, len(mutations))
 	for _, mutation := range mutations {
+		mutation.Document.ID = strings.TrimSpace(mutation.Document.ID)
 		records = append(records, record{
 			document: mutation.Document,
 			deleted:  mutation.Deleted,

@@ -9,6 +9,11 @@ GO_IMAGE := golang:$(GO_VERSION)-bookworm
 NODE_IMAGE := node:$(NODE_VERSION)-bookworm-slim
 WEB_NODE_MODULES_VOLUME := privatemesh-web-node-modules
 NODE_RUN := docker run --rm -v "$(ROOT_DIR)/web:/workspace" -v "$(WEB_NODE_MODULES_VOLUME):/workspace/node_modules" -w /workspace $(NODE_IMAGE)
+BENCHMARK_DOCUMENTS ?= 1000000
+BENCHMARK_QUERIES ?= 500
+LOAD_TEST_URL ?= http://host.docker.internal:18080/api/search
+LOAD_TEST_REQUESTS ?= 1000
+LOAD_TEST_CONCURRENCY ?= 25
 
 .DEFAULT_GOAL := help
 
@@ -75,3 +80,19 @@ clean: ## Remove build outputs without deleting runtime data.
 .PHONY: compose-config
 compose-config: ## Validate the Compose model.
 	docker compose -f deployments/compose/compose.yaml config --quiet
+
+.PHONY: benchmark-million
+benchmark-million: ## Index one million deterministic documents and report latency and memory use.
+	docker run --rm -v "$(ROOT_DIR):/workspace" -w /workspace $(GO_IMAGE) go run ./cmd/index-benchmark -documents $(BENCHMARK_DOCUMENTS) -queries $(BENCHMARK_QUERIES)
+
+.PHONY: load-test
+load-test: ## Exercise the running search API under concurrent load.
+	docker run --rm -v "$(ROOT_DIR):/workspace" -w /workspace $(GO_IMAGE) go run ./cmd/load-test -url $(LOAD_TEST_URL) -requests $(LOAD_TEST_REQUESTS) -concurrency $(LOAD_TEST_CONCURRENCY)
+
+.PHONY: chaos-test
+chaos-test: ## Verify explicit partial results and node rejoining after process loss.
+	./scripts/chaos-test.sh
+
+.PHONY: recovery-test
+recovery-test: ## Verify WAL recovery across a search-node restart.
+	./scripts/recovery-test.sh

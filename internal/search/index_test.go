@@ -29,7 +29,7 @@ func TestIndexSearch(t *testing.T) {
 		want  []string
 	}{
 		{name: "all terms", query: "private search", mode: MatchAll, want: []string{"doc-a"}},
-		{name: "any term", query: "search ownership", mode: MatchAny, want: []string{"doc-a", "doc-b", "doc-c"}},
+		{name: "any term", query: "search ownership", mode: MatchAny, want: []string{"doc-b", "doc-a", "doc-c"}},
 		{name: "duplicate query terms", query: "private private", mode: MatchAll, want: []string{"doc-a", "doc-b"}},
 		{name: "stable limit", query: "documents", mode: MatchAny, limit: 1, want: []string{"doc-a"}},
 		{name: "no match", query: "missing", mode: MatchAny, want: []string{}},
@@ -47,6 +47,51 @@ func TestIndexSearch(t *testing.T) {
 				t.Fatalf("Search() IDs = %v, want %v", ids, test.want)
 			}
 		})
+	}
+}
+
+func TestIndexSearchWeightsTitles(t *testing.T) {
+	t.Parallel()
+
+	index := NewIndex()
+	documents := []Document{
+		{ID: "body-hit", Title: "Reference", Body: "mesh"},
+		{ID: "title-hit", Title: "Mesh", Body: "Reference"},
+	}
+	for _, document := range documents {
+		if err := index.Upsert(document); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	results, err := index.Search("mesh", MatchAny, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ids := documentIDs(results); !reflect.DeepEqual(ids, []string{"title-hit", "body-hit"}) {
+		t.Fatalf("Search() IDs = %v, want [title-hit body-hit]", ids)
+	}
+	if results[0].Score <= results[1].Score {
+		t.Fatalf("title score %f is not greater than body score %f", results[0].Score, results[1].Score)
+	}
+}
+
+func TestIndexSearchBreaksTiesByDocumentID(t *testing.T) {
+	t.Parallel()
+
+	index := NewIndex()
+	for _, id := range []string{"doc-b", "doc-a"} {
+		if err := index.Upsert(Document{ID: id, Title: "same"}); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	results, err := index.Search("same", MatchAny, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ids := documentIDs(results); !reflect.DeepEqual(ids, []string{"doc-a", "doc-b"}) {
+		t.Fatalf("Search() IDs = %v, want [doc-a doc-b]", ids)
 	}
 }
 
@@ -137,10 +182,10 @@ func TestIndexValidatesInput(t *testing.T) {
 	}
 }
 
-func documentIDs(documents []Document) []string {
-	ids := make([]string, len(documents))
-	for position, document := range documents {
-		ids[position] = document.ID
+func documentIDs(results []Result) []string {
+	ids := make([]string, len(results))
+	for position, result := range results {
+		ids[position] = result.Document.ID
 	}
 	return ids
 }

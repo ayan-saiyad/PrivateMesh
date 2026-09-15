@@ -1,0 +1,55 @@
+{
+  "documents": [
+    {
+      "ID": "local-index",
+      "Title": "Local document search",
+      "Body": "Search private files on the machine that owns them without uploading their contents."
+    },
+    {
+      "ID": "distributed-query",
+      "Title": "Distributed query routing",
+      "Body": "A coordinator sends each search request to local nodes and combines their responses."
+    },
+    {
+      "ID": "cloud-search",
+      "Title": "Centralized cloud search",
+      "Body": "Documents are copied to a remote service before they can be indexed and searched."
+    },
+    {
+      "ID": "access-control",
+      "Title": "Document access control",
+      "Body": "Authorization rules determine which private documents a user may read."
+    },
+    {
+      "ID": "garden-notes",
+      "Title": "Garden notes",
+      "Body": "Tomatoes need sunlight, water, and well drained soil."
+    }
+  ],
+  "queries": [
+    {
+      "text": "local document search",
+      "judgments": {
+        "local-index": 3,
+        "distributed-query": 1,
+        "cloud-search": 1
+      }
+    },
+    {
+      "text": "distributed search nodes",
+      "judgments": {
+        "distributed-query": 3,
+        "local-index": 2,
+        "cloud-search": 1
+      }
+    },
+    {
+      "text": "private document access",
+      "judgments": {
+        "access-control": 3,
+        "local-index": 2,
+        "cloud-search": 1
+      }
+    }
+  ]
+}

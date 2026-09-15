@@ -3,7 +3,6 @@ package search
 
 import (
 	"errors"
-	"sort"
 	"strings"
 	"sync"
 )
@@ -34,21 +33,32 @@ const (
 	MatchAny
 )
 
+type posting struct {
+	titleFrequency uint64
+	bodyFrequency  uint64
+}
+
+type fieldLengths struct {
+	title uint64
+	body  uint64
+}
+
 // Index stores documents and their term postings in memory.
 type Index struct {
-	mu            sync.RWMutex
-	documents     map[string]Document
-	postings      map[string]map[string]uint32
-	documentTerms map[string]map[string]uint32
+	mu              sync.RWMutex
+	documents       map[string]Document
+	postings        map[string]map[string]posting
+	documentTerms   map[string]map[string]struct{}
+	lengths         map[string]fieldLengths
+	totalTitleTerms uint64
+	totalBodyTerms  uint64
 }
 
 // NewIndex returns an empty index.
 func NewIndex() *Index {
-	return &Index{
-		documents:     make(map[string]Document),
-		postings:      make(map[string]map[string]uint32),
-		documentTerms: make(map[string]map[string]uint32),
-	}
+	index := &Index{}
+	index.initialize()
+	return index
 }
 
 // Upsert adds a document or replaces the existing document with the same ID.
@@ -58,7 +68,9 @@ func (i *Index) Upsert(document Document) error {
 		return ErrDocumentIDRequired
 	}
 
-	terms := termFrequencies(document.Title + "\n" + document.Body)
+	titleTerms, titleLength := analyze(document.Title)
+	bodyTerms, bodyLength := analyze(document.Body)
+	terms := mergeTerms(titleTerms, bodyTerms)
 
 	i.mu.Lock()
 	defer i.mu.Unlock()
@@ -67,11 +79,18 @@ func (i *Index) Upsert(document Document) error {
 	i.deleteLocked(document.ID)
 	i.documents[document.ID] = document
 	i.documentTerms[document.ID] = terms
-	for term, frequency := range terms {
+	i.lengths[document.ID] = fieldLengths{title: titleLength, body: bodyLength}
+	i.totalTitleTerms += titleLength
+	i.totalBodyTerms += bodyLength
+
+	for term := range terms {
 		if i.postings[term] == nil {
-			i.postings[term] = make(map[string]uint32)
+			i.postings[term] = make(map[string]posting)
 		}
-		i.postings[term][document.ID] = frequency
+		i.postings[term][document.ID] = posting{
+			titleFrequency: titleTerms[term],
+			bodyFrequency:  bodyTerms[term],
+		}
 	}
 
 	return nil
@@ -104,49 +123,18 @@ func (i *Index) Len() int {
 	return len(i.documents)
 }
 
-// Search returns matching documents ordered by ID. A zero limit returns every match.
-func (i *Index) Search(query string, mode MatchMode, limit int) ([]Document, error) {
-	if mode != MatchAll && mode != MatchAny {
-		return nil, ErrInvalidMatchMode
-	}
-	if limit < 0 {
-		return nil, ErrInvalidLimit
-	}
-
-	terms := uniqueTerms(tokenize(query))
-	if len(terms) == 0 {
-		return []Document{}, nil
-	}
-
-	i.mu.RLock()
-	defer i.mu.RUnlock()
-
-	matches := i.matchingDocuments(terms, mode)
-	ids := make([]string, 0, len(matches))
-	for id := range matches {
-		ids = append(ids, id)
-	}
-	sort.Strings(ids)
-	if limit > 0 && len(ids) > limit {
-		ids = ids[:limit]
-	}
-
-	documents := make([]Document, 0, len(ids))
-	for _, id := range ids {
-		documents = append(documents, i.documents[id])
-	}
-	return documents, nil
-}
-
 func (i *Index) initialize() {
 	if i.documents == nil {
 		i.documents = make(map[string]Document)
 	}
 	if i.postings == nil {
-		i.postings = make(map[string]map[string]uint32)
+		i.postings = make(map[string]map[string]posting)
 	}
 	if i.documentTerms == nil {
-		i.documentTerms = make(map[string]map[string]uint32)
+		i.documentTerms = make(map[string]map[string]struct{})
+	}
+	if i.lengths == nil {
+		i.lengths = make(map[string]fieldLengths)
 	}
 }
 
@@ -161,6 +149,11 @@ func (i *Index) deleteLocked(id string) bool {
 			delete(i.postings, term)
 		}
 	}
+
+	lengths := i.lengths[id]
+	i.totalTitleTerms -= lengths.title
+	i.totalBodyTerms -= lengths.body
+	delete(i.lengths, id)
 	delete(i.documentTerms, id)
 	delete(i.documents, id)
 	return true
@@ -195,12 +188,25 @@ func (i *Index) matchingDocuments(terms []string, mode MatchMode) map[string]str
 	return matches
 }
 
-func termFrequencies(text string) map[string]uint32 {
-	frequencies := make(map[string]uint32)
-	for _, term := range tokenize(text) {
+func analyze(text string) (map[string]uint64, uint64) {
+	tokens := tokenize(text)
+	frequencies := make(map[string]uint64, len(tokens))
+	var length uint64
+	for _, term := range tokens {
 		frequencies[term]++
+		length++
 	}
-	return frequencies
+	return frequencies, length
+}
+
+func mergeTerms(fields ...map[string]uint64) map[string]struct{} {
+	terms := make(map[string]struct{})
+	for _, field := range fields {
+		for term := range field {
+			terms[term] = struct{}{}
+		}
+	}
+	return terms
 }
 
 func uniqueTerms(terms []string) []string {

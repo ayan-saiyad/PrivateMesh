@@ -28,8 +28,8 @@ type Server struct {
 	server *http.Server
 }
 
-// New constructs a server with health, readiness, and version endpoints.
-func New(cfg config.Config, logger *slog.Logger) *Server {
+// New constructs a server with process endpoints and optional service routes.
+func New(cfg config.Config, logger *slog.Logger, registrars ...func(*http.ServeMux)) *Server {
 	mux := http.NewServeMux()
 	s := &Server{
 		config: cfg,
@@ -39,6 +39,11 @@ func New(cfg config.Config, logger *slog.Logger) *Server {
 	mux.HandleFunc("GET /healthz", s.health)
 	mux.HandleFunc("GET /readyz", s.ready)
 	mux.HandleFunc("GET /version", s.version)
+	for _, register := range registrars {
+		if register != nil {
+			register(mux)
+		}
+	}
 
 	s.server = &http.Server{
 		Addr:              cfg.HTTPAddress,

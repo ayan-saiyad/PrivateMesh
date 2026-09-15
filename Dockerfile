@@ -30,7 +30,7 @@ FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=build /out/service /service
 COPY --from=build --chown=nonroot:nonroot /out/data /var/lib/privatemesh
 
-EXPOSE 8080 8090
+EXPOSE 8080 8081 8090 8091
 
 USER nonroot:nonroot
 ENTRYPOINT ["/service"]

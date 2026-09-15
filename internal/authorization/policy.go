@@ -15,6 +15,9 @@ import (
 	"github.com/ayansaiyad/privatemesh/internal/identity"
 )
 
+// ErrPermissionDenied indicates that policy rejected an authenticated request.
+var ErrPermissionDenied = errors.New("permission denied")
+
 // Action identifies an operation protected by policy.
 type Action string
 

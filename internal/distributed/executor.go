@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ayansaiyad/privatemesh/internal/identity"
 	"github.com/ayansaiyad/privatemesh/internal/registry"
 )
 
@@ -17,20 +18,22 @@ const reciprocalRankConstant = 60
 type Query struct {
 	RequestID     string
 	Text          string
+	Mode          string
 	Limit         int
 	CollectionIDs []string
 	Timeout       time.Duration
+	Principal     identity.Principal
 }
 
 // Hit is a document match returned by a search node.
 type Hit struct {
-	DocumentID   string
-	CollectionID string
-	NodeID       string
-	Title        string
-	Snippet      string
-	Score        float64
-	Rank         int
+	DocumentID   string  `json:"document_id"`
+	CollectionID string  `json:"collection_id"`
+	NodeID       string  `json:"node_id"`
+	Title        string  `json:"title"`
+	Snippet      string  `json:"snippet"`
+	Score        float64 `json:"score"`
+	Rank         int     `json:"rank"`
 }
 
 // Update contains the best merged results and current shard coverage.

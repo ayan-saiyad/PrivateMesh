@@ -5,9 +5,12 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/ayansaiyad/privatemesh/internal/app"
+	coordinatorservice "github.com/ayansaiyad/privatemesh/internal/coordinator"
 )
 
 func main() {
@@ -27,7 +30,12 @@ func main() {
 		return
 	}
 
-	if err := app.Run(context.Background(), os.Stdout, options); err != nil {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	err := coordinatorservice.Run(ctx, os.Stdout, coordinatorservice.RuntimeOptions{
+		HTTPAddress: ":8080", GRPCAddress: ":8081",
+	})
+	stop()
+	if err != nil {
 		logger.Error("service stopped", "error", err)
 		os.Exit(1)
 	}

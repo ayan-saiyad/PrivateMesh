@@ -5,9 +5,12 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/ayansaiyad/privatemesh/internal/app"
+	searchnodeservice "github.com/ayansaiyad/privatemesh/internal/searchnode"
 )
 
 func main() {
@@ -27,7 +30,12 @@ func main() {
 		return
 	}
 
-	if err := app.Run(context.Background(), os.Stdout, options); err != nil {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	err := searchnodeservice.Run(ctx, os.Stdout, searchnodeservice.RuntimeOptions{
+		HTTPAddress: ":8090", GRPCAddress: ":8091",
+	})
+	stop()
+	if err != nil {
 		logger.Error("service stopped", "error", err)
 		os.Exit(1)
 	}

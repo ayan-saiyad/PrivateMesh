@@ -11,6 +11,11 @@ service SearchService {
   rpc GetDocument(GetDocumentRequest) returns (GetDocumentResponse);
 }
 
+service IndexService {
+  rpc UpsertDocument(UpsertDocumentRequest) returns (UpsertDocumentResponse);
+  rpc DeleteDocument(DeleteDocumentRequest) returns (DeleteDocumentResponse);
+}
+
 enum RetrievalMode {
   RETRIEVAL_MODE_UNSPECIFIED = 0;
   RETRIEVAL_MODE_LEXICAL = 1;
@@ -66,3 +71,29 @@ message GetDocumentResponse {
   bytes content = 3;
 }
 
+message Document {
+  string document_id = 1;
+  string title = 2;
+  string content = 3;
+  string media_type = 4;
+}
+
+message UpsertDocumentRequest {
+  string request_id = 1;
+  string collection_id = 2;
+  Document document = 3;
+}
+
+message DeleteDocumentRequest {
+  string request_id = 1;
+  string collection_id = 2;
+  string document_id = 3;
+}
+
+message UpsertDocumentResponse {
+  uint64 committed_offset = 1;
+}
+
+message DeleteDocumentResponse {
+  uint64 committed_offset = 1;
+}

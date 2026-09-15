@@ -525,6 +525,282 @@ func (x *GetDocumentResponse) GetContent() []byte {
 	return nil
 }
 
+type Document struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DocumentId    string                 `protobuf:"bytes,1,opt,name=document_id,json=documentId,proto3" json:"document_id,omitempty"`
+	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	Content       string                 `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
+	MediaType     string                 `protobuf:"bytes,4,opt,name=media_type,json=mediaType,proto3" json:"media_type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Document) Reset() {
+	*x = Document{}
+	mi := &file_privatemesh_v1_search_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Document) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Document) ProtoMessage() {}
+
+func (x *Document) ProtoReflect() protoreflect.Message {
+	mi := &file_privatemesh_v1_search_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Document.ProtoReflect.Descriptor instead.
+func (*Document) Descriptor() ([]byte, []int) {
+	return file_privatemesh_v1_search_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *Document) GetDocumentId() string {
+	if x != nil {
+		return x.DocumentId
+	}
+	return ""
+}
+
+func (x *Document) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *Document) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+func (x *Document) GetMediaType() string {
+	if x != nil {
+		return x.MediaType
+	}
+	return ""
+}
+
+type UpsertDocumentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RequestId     string                 `protobuf:"bytes,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	CollectionId  string                 `protobuf:"bytes,2,opt,name=collection_id,json=collectionId,proto3" json:"collection_id,omitempty"`
+	Document      *Document              `protobuf:"bytes,3,opt,name=document,proto3" json:"document,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpsertDocumentRequest) Reset() {
+	*x = UpsertDocumentRequest{}
+	mi := &file_privatemesh_v1_search_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpsertDocumentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpsertDocumentRequest) ProtoMessage() {}
+
+func (x *UpsertDocumentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_privatemesh_v1_search_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpsertDocumentRequest.ProtoReflect.Descriptor instead.
+func (*UpsertDocumentRequest) Descriptor() ([]byte, []int) {
+	return file_privatemesh_v1_search_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *UpsertDocumentRequest) GetRequestId() string {
+	if x != nil {
+		return x.RequestId
+	}
+	return ""
+}
+
+func (x *UpsertDocumentRequest) GetCollectionId() string {
+	if x != nil {
+		return x.CollectionId
+	}
+	return ""
+}
+
+func (x *UpsertDocumentRequest) GetDocument() *Document {
+	if x != nil {
+		return x.Document
+	}
+	return nil
+}
+
+type DeleteDocumentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RequestId     string                 `protobuf:"bytes,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	CollectionId  string                 `protobuf:"bytes,2,opt,name=collection_id,json=collectionId,proto3" json:"collection_id,omitempty"`
+	DocumentId    string                 `protobuf:"bytes,3,opt,name=document_id,json=documentId,proto3" json:"document_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteDocumentRequest) Reset() {
+	*x = DeleteDocumentRequest{}
+	mi := &file_privatemesh_v1_search_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteDocumentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteDocumentRequest) ProtoMessage() {}
+
+func (x *DeleteDocumentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_privatemesh_v1_search_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteDocumentRequest.ProtoReflect.Descriptor instead.
+func (*DeleteDocumentRequest) Descriptor() ([]byte, []int) {
+	return file_privatemesh_v1_search_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *DeleteDocumentRequest) GetRequestId() string {
+	if x != nil {
+		return x.RequestId
+	}
+	return ""
+}
+
+func (x *DeleteDocumentRequest) GetCollectionId() string {
+	if x != nil {
+		return x.CollectionId
+	}
+	return ""
+}
+
+func (x *DeleteDocumentRequest) GetDocumentId() string {
+	if x != nil {
+		return x.DocumentId
+	}
+	return ""
+}
+
+type UpsertDocumentResponse struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	CommittedOffset uint64                 `protobuf:"varint,1,opt,name=committed_offset,json=committedOffset,proto3" json:"committed_offset,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *UpsertDocumentResponse) Reset() {
+	*x = UpsertDocumentResponse{}
+	mi := &file_privatemesh_v1_search_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpsertDocumentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpsertDocumentResponse) ProtoMessage() {}
+
+func (x *UpsertDocumentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_privatemesh_v1_search_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpsertDocumentResponse.ProtoReflect.Descriptor instead.
+func (*UpsertDocumentResponse) Descriptor() ([]byte, []int) {
+	return file_privatemesh_v1_search_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *UpsertDocumentResponse) GetCommittedOffset() uint64 {
+	if x != nil {
+		return x.CommittedOffset
+	}
+	return 0
+}
+
+type DeleteDocumentResponse struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	CommittedOffset uint64                 `protobuf:"varint,1,opt,name=committed_offset,json=committedOffset,proto3" json:"committed_offset,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *DeleteDocumentResponse) Reset() {
+	*x = DeleteDocumentResponse{}
+	mi := &file_privatemesh_v1_search_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteDocumentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteDocumentResponse) ProtoMessage() {}
+
+func (x *DeleteDocumentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_privatemesh_v1_search_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteDocumentResponse.ProtoReflect.Descriptor instead.
+func (*DeleteDocumentResponse) Descriptor() ([]byte, []int) {
+	return file_privatemesh_v1_search_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *DeleteDocumentResponse) GetCommittedOffset() uint64 {
+	if x != nil {
+		return x.CommittedOffset
+	}
+	return 0
+}
+
 var File_privatemesh_v1_search_proto protoreflect.FileDescriptor
 
 const file_privatemesh_v1_search_proto_rawDesc = "" +
@@ -571,7 +847,29 @@ const file_privatemesh_v1_search_proto_rawDesc = "" +
 	"documentId\x12\x1d\n" +
 	"\n" +
 	"media_type\x18\x02 \x01(\tR\tmediaType\x12\x18\n" +
-	"\acontent\x18\x03 \x01(\fR\acontent*\x9a\x01\n" +
+	"\acontent\x18\x03 \x01(\fR\acontent\"z\n" +
+	"\bDocument\x12\x1f\n" +
+	"\vdocument_id\x18\x01 \x01(\tR\n" +
+	"documentId\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12\x18\n" +
+	"\acontent\x18\x03 \x01(\tR\acontent\x12\x1d\n" +
+	"\n" +
+	"media_type\x18\x04 \x01(\tR\tmediaType\"\x91\x01\n" +
+	"\x15UpsertDocumentRequest\x12\x1d\n" +
+	"\n" +
+	"request_id\x18\x01 \x01(\tR\trequestId\x12#\n" +
+	"\rcollection_id\x18\x02 \x01(\tR\fcollectionId\x124\n" +
+	"\bdocument\x18\x03 \x01(\v2\x18.privatemesh.v1.DocumentR\bdocument\"|\n" +
+	"\x15DeleteDocumentRequest\x12\x1d\n" +
+	"\n" +
+	"request_id\x18\x01 \x01(\tR\trequestId\x12#\n" +
+	"\rcollection_id\x18\x02 \x01(\tR\fcollectionId\x12\x1f\n" +
+	"\vdocument_id\x18\x03 \x01(\tR\n" +
+	"documentId\"C\n" +
+	"\x16UpsertDocumentResponse\x12)\n" +
+	"\x10committed_offset\x18\x01 \x01(\x04R\x0fcommittedOffset\"C\n" +
+	"\x16DeleteDocumentResponse\x12)\n" +
+	"\x10committed_offset\x18\x01 \x01(\x04R\x0fcommittedOffset*\x9a\x01\n" +
 	"\rRetrievalMode\x12\x1e\n" +
 	"\x1aRETRIEVAL_MODE_UNSPECIFIED\x10\x00\x12\x1a\n" +
 	"\x16RETRIEVAL_MODE_LEXICAL\x10\x01\x12\x19\n" +
@@ -580,7 +878,10 @@ const file_privatemesh_v1_search_proto_rawDesc = "" +
 	"\x13RETRIEVAL_MODE_AUTO\x10\x042\xb2\x01\n" +
 	"\rSearchService\x12I\n" +
 	"\x06Search\x12\x1d.privatemesh.v1.SearchRequest\x1a\x1e.privatemesh.v1.SearchResponse0\x01\x12V\n" +
-	"\vGetDocument\x12\".privatemesh.v1.GetDocumentRequest\x1a#.privatemesh.v1.GetDocumentResponseBGZEgithub.com/ayansaiyad/privatemesh/gen/go/privatemesh/v1;privatemeshv1b\x06proto3"
+	"\vGetDocument\x12\".privatemesh.v1.GetDocumentRequest\x1a#.privatemesh.v1.GetDocumentResponse2\xd0\x01\n" +
+	"\fIndexService\x12_\n" +
+	"\x0eUpsertDocument\x12%.privatemesh.v1.UpsertDocumentRequest\x1a&.privatemesh.v1.UpsertDocumentResponse\x12_\n" +
+	"\x0eDeleteDocument\x12%.privatemesh.v1.DeleteDocumentRequest\x1a&.privatemesh.v1.DeleteDocumentResponseBGZEgithub.com/ayansaiyad/privatemesh/gen/go/privatemesh/v1;privatemeshv1b\x06proto3"
 
 var (
 	file_privatemesh_v1_search_proto_rawDescOnce sync.Once
@@ -595,32 +896,42 @@ func file_privatemesh_v1_search_proto_rawDescGZIP() []byte {
 }
 
 var file_privatemesh_v1_search_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_privatemesh_v1_search_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_privatemesh_v1_search_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_privatemesh_v1_search_proto_goTypes = []any{
-	(RetrievalMode)(0),          // 0: privatemesh.v1.RetrievalMode
-	(*SearchRequest)(nil),       // 1: privatemesh.v1.SearchRequest
-	(*Principal)(nil),           // 2: privatemesh.v1.Principal
-	(*SearchResult)(nil),        // 3: privatemesh.v1.SearchResult
-	(*SearchResponse)(nil),      // 4: privatemesh.v1.SearchResponse
-	(*GetDocumentRequest)(nil),  // 5: privatemesh.v1.GetDocumentRequest
-	(*GetDocumentResponse)(nil), // 6: privatemesh.v1.GetDocumentResponse
-	(*durationpb.Duration)(nil), // 7: google.protobuf.Duration
+	(RetrievalMode)(0),             // 0: privatemesh.v1.RetrievalMode
+	(*SearchRequest)(nil),          // 1: privatemesh.v1.SearchRequest
+	(*Principal)(nil),              // 2: privatemesh.v1.Principal
+	(*SearchResult)(nil),           // 3: privatemesh.v1.SearchResult
+	(*SearchResponse)(nil),         // 4: privatemesh.v1.SearchResponse
+	(*GetDocumentRequest)(nil),     // 5: privatemesh.v1.GetDocumentRequest
+	(*GetDocumentResponse)(nil),    // 6: privatemesh.v1.GetDocumentResponse
+	(*Document)(nil),               // 7: privatemesh.v1.Document
+	(*UpsertDocumentRequest)(nil),  // 8: privatemesh.v1.UpsertDocumentRequest
+	(*DeleteDocumentRequest)(nil),  // 9: privatemesh.v1.DeleteDocumentRequest
+	(*UpsertDocumentResponse)(nil), // 10: privatemesh.v1.UpsertDocumentResponse
+	(*DeleteDocumentResponse)(nil), // 11: privatemesh.v1.DeleteDocumentResponse
+	(*durationpb.Duration)(nil),    // 12: google.protobuf.Duration
 }
 var file_privatemesh_v1_search_proto_depIdxs = []int32{
-	0, // 0: privatemesh.v1.SearchRequest.mode:type_name -> privatemesh.v1.RetrievalMode
-	7, // 1: privatemesh.v1.SearchRequest.latency_budget:type_name -> google.protobuf.Duration
-	2, // 2: privatemesh.v1.SearchRequest.principal:type_name -> privatemesh.v1.Principal
-	3, // 3: privatemesh.v1.SearchResponse.results:type_name -> privatemesh.v1.SearchResult
-	2, // 4: privatemesh.v1.GetDocumentRequest.principal:type_name -> privatemesh.v1.Principal
-	1, // 5: privatemesh.v1.SearchService.Search:input_type -> privatemesh.v1.SearchRequest
-	5, // 6: privatemesh.v1.SearchService.GetDocument:input_type -> privatemesh.v1.GetDocumentRequest
-	4, // 7: privatemesh.v1.SearchService.Search:output_type -> privatemesh.v1.SearchResponse
-	6, // 8: privatemesh.v1.SearchService.GetDocument:output_type -> privatemesh.v1.GetDocumentResponse
-	7, // [7:9] is the sub-list for method output_type
-	5, // [5:7] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	0,  // 0: privatemesh.v1.SearchRequest.mode:type_name -> privatemesh.v1.RetrievalMode
+	12, // 1: privatemesh.v1.SearchRequest.latency_budget:type_name -> google.protobuf.Duration
+	2,  // 2: privatemesh.v1.SearchRequest.principal:type_name -> privatemesh.v1.Principal
+	3,  // 3: privatemesh.v1.SearchResponse.results:type_name -> privatemesh.v1.SearchResult
+	2,  // 4: privatemesh.v1.GetDocumentRequest.principal:type_name -> privatemesh.v1.Principal
+	7,  // 5: privatemesh.v1.UpsertDocumentRequest.document:type_name -> privatemesh.v1.Document
+	1,  // 6: privatemesh.v1.SearchService.Search:input_type -> privatemesh.v1.SearchRequest
+	5,  // 7: privatemesh.v1.SearchService.GetDocument:input_type -> privatemesh.v1.GetDocumentRequest
+	8,  // 8: privatemesh.v1.IndexService.UpsertDocument:input_type -> privatemesh.v1.UpsertDocumentRequest
+	9,  // 9: privatemesh.v1.IndexService.DeleteDocument:input_type -> privatemesh.v1.DeleteDocumentRequest
+	4,  // 10: privatemesh.v1.SearchService.Search:output_type -> privatemesh.v1.SearchResponse
+	6,  // 11: privatemesh.v1.SearchService.GetDocument:output_type -> privatemesh.v1.GetDocumentResponse
+	10, // 12: privatemesh.v1.IndexService.UpsertDocument:output_type -> privatemesh.v1.UpsertDocumentResponse
+	11, // 13: privatemesh.v1.IndexService.DeleteDocument:output_type -> privatemesh.v1.DeleteDocumentResponse
+	10, // [10:14] is the sub-list for method output_type
+	6,  // [6:10] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_privatemesh_v1_search_proto_init() }
@@ -634,9 +945,9 @@ func file_privatemesh_v1_search_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_privatemesh_v1_search_proto_rawDesc), len(file_privatemesh_v1_search_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   6,
+			NumMessages:   11,
 			NumExtensions: 0,
-			NumServices:   1,
+			NumServices:   2,
 		},
 		GoTypes:           file_privatemesh_v1_search_proto_goTypes,
 		DependencyIndexes: file_privatemesh_v1_search_proto_depIdxs,

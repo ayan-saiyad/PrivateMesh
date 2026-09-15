@@ -20,12 +20,14 @@ const (
 type Defaults struct {
 	ServiceName string
 	HTTPAddress string
+	GRPCAddress string
 }
 
 // Config is the validated process configuration shared by backend services.
 type Config struct {
 	ServiceName     string
 	HTTPAddress     string
+	GRPCAddress     string
 	ShutdownTimeout time.Duration
 	DataDir         string
 	LogLevel        slog.Level
@@ -45,6 +47,13 @@ func Load(defaults Defaults) (Config, error) {
 	if err := validateAddress(address); err != nil {
 		return Config{}, fmt.Errorf("HTTP address: %w", err)
 	}
+	grpcAddress := ""
+	if strings.TrimSpace(defaults.GRPCAddress) != "" {
+		grpcAddress = valueOrDefault("PRIVATEMESH_"+prefix+"_GRPC_ADDRESS", defaults.GRPCAddress)
+		if err := validateAddress(grpcAddress); err != nil {
+			return Config{}, fmt.Errorf("gRPC address: %w", err)
+		}
+	}
 
 	shutdownTimeout, err := time.ParseDuration(valueOrDefault(
 		"PRIVATEMESH_SHUTDOWN_TIMEOUT",
@@ -62,6 +71,7 @@ func Load(defaults Defaults) (Config, error) {
 	return Config{
 		ServiceName:     defaults.ServiceName,
 		HTTPAddress:     address,
+		GRPCAddress:     grpcAddress,
 		ShutdownTimeout: shutdownTimeout,
 		DataDir:         valueOrDefault("PRIVATEMESH_NODE_DATA_DIR", defaultDataDir),
 		LogLevel:        logLevel,

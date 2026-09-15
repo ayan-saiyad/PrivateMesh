@@ -16,9 +16,12 @@ services:
         SERVICE: coordinator
     environment:
       <<: *service-environment
+      PRIVATEMESH_DEMO_MODE: "true"
       PRIVATEMESH_COORDINATOR_HTTP_ADDRESS: :8080
+      PRIVATEMESH_COORDINATOR_GRPC_ADDRESS: :8081
     ports:
       - "${PRIVATEMESH_COORDINATOR_HOST_PORT:-18080}:8080"
+      - "${PRIVATEMESH_COORDINATOR_GRPC_HOST_PORT:-18081}:8081"
     healthcheck:
       test: ["CMD", "/service", "healthcheck"]
       interval: 10s
@@ -34,10 +37,17 @@ services:
         SERVICE: search-node
     environment:
       <<: *service-environment
+      PRIVATEMESH_DEMO_MODE: "true"
       PRIVATEMESH_SEARCH_NODE_HTTP_ADDRESS: :8090
+      PRIVATEMESH_SEARCH_NODE_GRPC_ADDRESS: :8091
       PRIVATEMESH_NODE_DATA_DIR: /var/lib/privatemesh
+      PRIVATEMESH_NODE_ID: node-a
+      PRIVATEMESH_COLLECTION_ID: engineering
+      PRIVATEMESH_NODE_ADVERTISE_ADDRESS: search-node-a:8091
+      PRIVATEMESH_COORDINATOR_GRPC_ADDRESS: coordinator:8081
     ports:
       - "${PRIVATEMESH_NODE_A_HOST_PORT:-18091}:8090"
+      - "${PRIVATEMESH_NODE_A_GRPC_HOST_PORT:-18093}:8091"
     volumes:
       - node-a-data:/var/lib/privatemesh
     healthcheck:
@@ -47,6 +57,9 @@ services:
       retries: 3
       start_period: 5s
     restart: unless-stopped
+    depends_on:
+      coordinator:
+        condition: service_healthy
 
   search-node-b:
     build:
@@ -55,10 +68,17 @@ services:
         SERVICE: search-node
     environment:
       <<: *service-environment
+      PRIVATEMESH_DEMO_MODE: "true"
       PRIVATEMESH_SEARCH_NODE_HTTP_ADDRESS: :8090
+      PRIVATEMESH_SEARCH_NODE_GRPC_ADDRESS: :8091
       PRIVATEMESH_NODE_DATA_DIR: /var/lib/privatemesh
+      PRIVATEMESH_NODE_ID: node-b
+      PRIVATEMESH_COLLECTION_ID: research
+      PRIVATEMESH_NODE_ADVERTISE_ADDRESS: search-node-b:8091
+      PRIVATEMESH_COORDINATOR_GRPC_ADDRESS: coordinator:8081
     ports:
       - "${PRIVATEMESH_NODE_B_HOST_PORT:-18092}:8090"
+      - "${PRIVATEMESH_NODE_B_GRPC_HOST_PORT:-18094}:8091"
     volumes:
       - node-b-data:/var/lib/privatemesh
     healthcheck:
@@ -67,6 +87,20 @@ services:
       timeout: 3s
       retries: 3
       start_period: 5s
+    restart: unless-stopped
+    depends_on:
+      coordinator:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ../../web
+      dockerfile: Dockerfile
+    ports:
+      - "${PRIVATEMESH_WEB_HOST_PORT:-18000}:8080"
+    depends_on:
+      coordinator:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:

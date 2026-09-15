@@ -11,16 +11,16 @@ export function App() {
         </div>
       </header>
 
-      <section className="status-panel" aria-labelledby="foundation-heading">
+      <section className="status-panel" aria-labelledby="ownership-heading">
         <div>
-          <p className="status-label">Foundation</p>
-          <h2 id="foundation-heading">Service environment ready</h2>
+          <p className="status-label">Private by design</p>
+          <h2 id="ownership-heading">Your documents stay where they live</h2>
           <p>
-            Indexing and query execution will be added in measured,
-            independently testable phases.
+            Each search node owns its content and index. The coordinator only
+            sends queries and combines the results.
           </p>
         </div>
-        <span className="status-indicator">Phase 0</span>
+        <span className="status-indicator">Local-first</span>
       </section>
     </main>
   );

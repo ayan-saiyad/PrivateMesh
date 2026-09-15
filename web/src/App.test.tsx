@@ -4,12 +4,15 @@ import { describe, expect, it } from "vitest";
 import { App } from "./App";
 
 describe("App", () => {
-  it("identifies the foundation phase", () => {
+  it("describes local document ownership", () => {
     render(<App />);
 
     expect(
       screen.getByRole("heading", { name: /distributed search/i }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Phase 0")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /documents stay where they live/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Local-first")).toBeInTheDocument();
   });
 });

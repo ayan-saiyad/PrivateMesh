@@ -7,6 +7,7 @@ x-service-build: &service-build
 x-service-environment: &service-environment
   PRIVATEMESH_LOG_LEVEL: ${PRIVATEMESH_LOG_LEVEL:-info}
   PRIVATEMESH_SHUTDOWN_TIMEOUT: ${PRIVATEMESH_SHUTDOWN_TIMEOUT:-10s}
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
 
 services:
   coordinator:
@@ -103,6 +104,56 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.160.0
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ../observability/otel-collector.yaml:/etc/otelcol-contrib/config.yaml:ro
+    depends_on:
+      - jaeger
+    restart: unless-stopped
+
+  jaeger:
+    image: jaegertracing/jaeger:2.20.0
+    ports:
+      - "${PRIVATEMESH_JAEGER_HOST_PORT:-16686}:16686"
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.13.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    ports:
+      - "${PRIVATEMESH_PROMETHEUS_HOST_PORT:-19090}:9090"
+    volumes:
+      - ../observability/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - coordinator
+      - search-node-a
+      - search-node-b
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:13.2.1
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+    ports:
+      - "${PRIVATEMESH_GRAFANA_HOST_PORT:-13000}:3000"
+    volumes:
+      - ../observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - jaeger
+    restart: unless-stopped
+
 volumes:
   node-a-data:
   node-b-data:
+  prometheus-data:
+  grafana-data:

@@ -78,6 +78,11 @@ type NodeClient interface {
 	GetDocument(ctx context.Context, node registry.Node, principal identity.Principal, requestID, collectionID, documentID string) (*privatemeshv1.GetDocumentResponse, error)
 }
 
+// SearchRecorder records bounded search outcome metrics.
+type SearchRecorder interface {
+	RecordSearch(ctx context.Context, strategy string, resultCount, unavailableShards int)
+}
+
 // API serves browser requests through the distributed executor.
 type API struct {
 	registry      *registry.Registry
@@ -86,6 +91,7 @@ type API struct {
 	nodes         NodeClient
 	authenticator Authenticator
 	newRequestID  func() (string, error)
+	recorder      SearchRecorder
 }
 
 // NewAPI creates a coordinator HTTP API.
@@ -95,14 +101,19 @@ func NewAPI(
 	queryPlanner *planner.Planner,
 	nodes NodeClient,
 	authenticator Authenticator,
+	recorders ...SearchRecorder,
 ) (*API, error) {
 	if nodeRegistry == nil || executor == nil || queryPlanner == nil || nodes == nil || authenticator == nil {
 		return nil, errors.New("registry, executor, planner, node client, and authenticator are required")
 	}
-	return &API{
+	api := &API{
 		registry: nodeRegistry, executor: executor, planner: queryPlanner,
 		nodes: nodes, authenticator: authenticator, newRequestID: randomRequestID,
-	}, nil
+	}
+	if len(recorders) > 0 {
+		api.recorder = recorders[0]
+	}
+	return api, nil
 }
 
 // RegisterRoutes adds API handlers to a mux.
@@ -187,6 +198,9 @@ func (a *API) search(response http.ResponseWriter, request *http.Request) {
 	var final distributed.Update
 	for update := range updates {
 		final = update
+	}
+	if a.recorder != nil {
+		a.recorder.RecordSearch(request.Context(), mode, len(final.Results), len(final.UnavailableShardIDs))
 	}
 	writeJSON(response, http.StatusOK, searchResponse{
 		RequestID: final.RequestID, Mode: mode, Results: nonNilHits(final.Results),

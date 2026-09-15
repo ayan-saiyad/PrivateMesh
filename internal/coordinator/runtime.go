@@ -25,7 +25,9 @@ import (
 	"github.com/ayansaiyad/privatemesh/internal/planner"
 	"github.com/ayansaiyad/privatemesh/internal/registry"
 	"github.com/ayansaiyad/privatemesh/internal/rpcclient"
+	"github.com/ayansaiyad/privatemesh/internal/telemetry"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
@@ -52,6 +54,15 @@ func Run(parent context.Context, output io.Writer, options RuntimeOptions) error
 		return fmt.Errorf("load coordinator configuration: %w", err)
 	}
 	logger := slog.New(slog.NewJSONHandler(output, &slog.HandlerOptions{Level: cfg.LogLevel}))
+	instrumentation, err := telemetry.New(parent, cfg.ServiceName)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		shutdownContext, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		_ = instrumentation.Shutdown(shutdownContext)
+		cancel()
+	}()
 	demoMode, err := environmentBool("PRIVATEMESH_DEMO_MODE", false)
 	if err != nil {
 		return err
@@ -78,7 +89,12 @@ func Run(parent context.Context, output io.Writer, options RuntimeOptions) error
 	if err != nil {
 		return err
 	}
-	nodeClient, err := rpcclient.New(signer)
+	nodeClient, err := rpcclient.New(
+		signer,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithChainUnaryInterceptor(instrumentation.UnaryClientInterceptor),
+		grpc.WithChainStreamInterceptor(instrumentation.StreamClientInterceptor),
+	)
 	if err != nil {
 		return err
 	}
@@ -87,7 +103,7 @@ func Run(parent context.Context, output io.Writer, options RuntimeOptions) error
 	if err != nil {
 		return err
 	}
-	api, err := NewAPI(nodeRegistry, executor, queryPlanner, nodeClient, authenticator)
+	api, err := NewAPI(nodeRegistry, executor, queryPlanner, nodeClient, authenticator, instrumentation)
 	if err != nil {
 		return err
 	}
@@ -100,9 +116,14 @@ func Run(parent context.Context, output io.Writer, options RuntimeOptions) error
 	if err != nil {
 		return fmt.Errorf("listen for coordinator gRPC: %w", err)
 	}
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(instrumentation.UnaryServerInterceptor),
+		grpc.ChainStreamInterceptor(instrumentation.StreamServerInterceptor),
+	)
 	privatemeshv1.RegisterControlPlaneServiceServer(grpcServer, controlService)
-	httpServer := httpserver.New(cfg, logger, api.RegisterRoutes)
+	httpServer := httpserver.NewWithMiddleware(
+		cfg, logger, instrumentation.HTTPMiddleware, api.RegisterRoutes, instrumentation.RegisterRoutes,
+	)
 	logger.Info("coordinator ready", "http_address", cfg.HTTPAddress, "grpc_address", cfg.GRPCAddress)
 	return serveCoordinator(parent, httpServer, grpcServer, grpcListener)
 }

@@ -30,6 +30,25 @@ type Server struct {
 
 // New constructs a server with process endpoints and optional service routes.
 func New(cfg config.Config, logger *slog.Logger, registrars ...func(*http.ServeMux)) *Server {
+	return newServer(cfg, logger, nil, registrars...)
+}
+
+// NewWithMiddleware constructs a server whose service and process routes share one middleware.
+func NewWithMiddleware(
+	cfg config.Config,
+	logger *slog.Logger,
+	middleware func(http.Handler) http.Handler,
+	registrars ...func(*http.ServeMux),
+) *Server {
+	return newServer(cfg, logger, middleware, registrars...)
+}
+
+func newServer(
+	cfg config.Config,
+	logger *slog.Logger,
+	middleware func(http.Handler) http.Handler,
+	registrars ...func(*http.ServeMux),
+) *Server {
 	mux := http.NewServeMux()
 	s := &Server{
 		config: cfg,
@@ -45,9 +64,13 @@ func New(cfg config.Config, logger *slog.Logger, registrars ...func(*http.ServeM
 		}
 	}
 
+	handler := http.Handler(mux)
+	if middleware != nil {
+		handler = middleware(handler)
+	}
 	s.server = &http.Server{
 		Addr:              cfg.HTTPAddress,
-		Handler:           requestLogger(s.logger, mux),
+		Handler:           requestLogger(s.logger, handler),
 		ReadHeaderTimeout: readHeaderTimeout,
 		ReadTimeout:       readTimeout,
 		WriteTimeout:      writeTimeout,

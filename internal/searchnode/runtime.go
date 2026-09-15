@@ -21,6 +21,7 @@ import (
 	"github.com/ayansaiyad/privatemesh/internal/embedding"
 	"github.com/ayansaiyad/privatemesh/internal/httpserver"
 	"github.com/ayansaiyad/privatemesh/internal/identity"
+	"github.com/ayansaiyad/privatemesh/internal/telemetry"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -52,6 +53,15 @@ func Run(parent context.Context, output io.Writer, options RuntimeOptions) error
 		return fmt.Errorf("load search node configuration: %w", err)
 	}
 	logger := slog.New(slog.NewJSONHandler(output, &slog.HandlerOptions{Level: cfg.LogLevel}))
+	instrumentation, err := telemetry.New(parent, cfg.ServiceName)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		shutdownContext, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		_ = instrumentation.Shutdown(shutdownContext)
+		cancel()
+	}()
 	demoMode, err := nodeEnvironmentBool("PRIVATEMESH_DEMO_MODE", false)
 	if err != nil {
 		return err
@@ -112,9 +122,14 @@ func Run(parent context.Context, output io.Writer, options RuntimeOptions) error
 	if err != nil {
 		return fmt.Errorf("listen for search node gRPC: %w", err)
 	}
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(instrumentation.UnaryServerInterceptor),
+		grpc.ChainStreamInterceptor(instrumentation.StreamServerInterceptor),
+	)
 	service.Register(grpcServer)
-	httpServer := httpserver.New(cfg, logger)
+	httpServer := httpserver.NewWithMiddleware(
+		cfg, logger, instrumentation.HTTPMiddleware, instrumentation.RegisterRoutes,
+	)
 	logger.Info("search node ready",
 		"node_id", nodeID, "collection_id", collectionID,
 		"http_address", cfg.HTTPAddress, "grpc_address", cfg.GRPCAddress,
@@ -123,7 +138,7 @@ func Run(parent context.Context, output io.Writer, options RuntimeOptions) error
 		parent, httpServer, grpcServer, grpcListener, logger,
 		registrationOptions{
 			CoordinatorAddress: coordinatorAddress, NodeID: nodeID, AdvertisedAddress: advertisedAddress,
-			CollectionID: collectionID, Offset: engine.Offset,
+			CollectionID: collectionID, Offset: engine.Offset, Telemetry: instrumentation,
 		},
 	)
 }
@@ -163,10 +178,18 @@ type registrationOptions struct {
 	AdvertisedAddress  string
 	CollectionID       string
 	Offset             func() uint64
+	Telemetry          *telemetry.Telemetry
 }
 
 func maintainRegistration(ctx context.Context, logger *slog.Logger, options registrationOptions) error {
-	connection, err := grpc.NewClient(options.CoordinatorAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	dialOptions := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	if options.Telemetry != nil {
+		dialOptions = append(dialOptions,
+			grpc.WithChainUnaryInterceptor(options.Telemetry.UnaryClientInterceptor),
+			grpc.WithChainStreamInterceptor(options.Telemetry.StreamClientInterceptor),
+		)
+	}
+	connection, err := grpc.NewClient(options.CoordinatorAddress, dialOptions...)
 	if err != nil {
 		return fmt.Errorf("create coordinator client: %w", err)
 	}

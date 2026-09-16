@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version: "1.26.5"
           cache: true
@@ -36,7 +36,7 @@ jobs:
           go build -trimpath -o bin/search-node ./cmd/search-node
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
           version: v2.12.2
 
@@ -44,18 +44,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Buf
-        uses: bufbuild/buf-setup-action@v1
-        with:
-          version: 1.72.0
+        uses: actions/checkout@v7
 
       - name: Lint contracts
-        run: buf lint
+        run: docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:1.72.0 lint
 
       - name: Verify generated bindings
-        run: buf generate
+        run: docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:1.72.0 generate
 
       - name: Check generated bindings
         run: git diff --exit-code -- gen/go
@@ -72,10 +67,10 @@ jobs:
         working-directory: web
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "24.21.0"
           cache: npm

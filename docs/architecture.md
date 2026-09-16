@@ -1,91 +1,72 @@
 # Architecture
 
-## Ownership boundary
+PrivateMesh has one coordinator and any number of search nodes.
 
-PrivateMesh separates query orchestration from document ownership. The coordinator authenticates a
-request, selects healthy owning nodes, chooses a retrieval strategy, propagates a deadline, and
-merges ranked results. It holds no source-document store and builds no global index.
+The coordinator handles each request. It checks who is making the request, finds the right nodes,
+sends them the search, and joins their results.
 
-Each search node owns one collection in the reference deployment. It persists mutations, rebuilds
-its indexes after restart, evaluates policy locally, and returns only permitted results. A node is
-authoritative for its source documents, lexical postings, embeddings, and access policy.
+Each search node owns a document collection. It saves those documents, builds its own search data,
+checks access, and returns only allowed results. The coordinator does not keep a full copy of the
+documents or indexes.
 
-## Request path
-
-```text
-Browser or API client
-        |
-        | HTTP + OIDC bearer token
-        v
-   Coordinator
-        |
-        | short-lived signed principal, deadline, gRPC stream
-        +--------------------------+
-        |                          |
-        v                          v
-Engineering node              Research node
-        |                          |
-        v                          v
-WAL + local indexes           WAL + local indexes
-```
-
-The coordinator registry tracks node leases, collection ownership, labels, and applied log offsets.
-The planner uses the request deadline, query features, and node health to select lexical, vector, or
-hybrid retrieval. The distributed executor fans out concurrently and emits updated global top-k
-results as nodes answer. The final HTTP response identifies both searched and unavailable shards.
-
-## Local retrieval
-
-The search core is transport-independent. Its lexical path tokenizes normalized Unicode text,
-stores field-aware term frequencies, and ranks with BM25. The vector path supports an exact cosine
-baseline and an HNSW graph. Hybrid retrieval combines independently ranked lexical and vector lists
-using reciprocal-rank fusion.
-
-The running nodes use deterministic local embeddings so the complete system has no external model
-dependency. The embedding interface can be replaced by an organization-hosted model without
-changing query distribution or policy enforcement.
-
-## Durability and recovery
-
-Every mutation is appended and committed to a checksummed WAL before the in-memory indexes change.
-On startup, the node replays committed entries and ignores uncommitted work. Immutable segment
-files have versioned headers, checksums, delta-encoded postings, atomic publication, and a merge
-policy.
-
-Replication primitives model a single leased primary, ordered replica acknowledgement, retained-log
-catch-up, and snapshot installation after compaction. The reference two-node deployment assigns a
-different collection to each node; it demonstrates independent ownership and partial availability,
-not two replicas of the same collection.
-
-## Identity and authorization
-
-Outside demonstration mode, the coordinator verifies an OIDC access token and creates a short-lived
-Ed25519 token containing the normalized principal, groups, and scopes. Search nodes verify that
-token locally. They never trust browser-supplied principal headers.
-
-Search and full-document reads pass through collection and optional document policies at the owning
-node. Write RPCs require the `documents.write` scope. Authorization logs contain opaque HMAC
-fingerprints and request/resource identifiers, not subject names, queries, or content.
-
-## Observability
-
-HTTP and gRPC spans propagate W3C trace context through the coordinator and nodes. Prometheus
-metrics cover request rates, latency distributions, retrieval strategies, result counts, RPC status,
-and unavailable shards. Attribute sets are bounded and deliberately exclude URLs, query text,
-documents, snippets, tokens, and principal fields.
-
-The Compose environment routes OTLP traces through the OpenTelemetry Collector to Jaeger and
-provisions a Grafana dashboard backed by Prometheus and Jaeger.
-
-## Dependency direction
+## Search flow
 
 ```text
-commands -> runtimes -> coordinator/search-node services -> search algorithms
-                         |                         |
-                         +-> transport            +-> WAL and segments
-                         +-> identity/policy       +-> vector indexes
-                         +-> telemetry
+Browser or API
+      |
+      v
+Coordinator
+      |
+      +-------------------+
+      |                   |
+      v                   v
+Search node A         Search node B
+      |                   |
+      v                   v
+Local documents       Local documents
+and indexes           and indexes
 ```
 
-The algorithm packages do not depend on HTTP, gRPC, configuration, identity providers, or a
-particular deployment platform.
+The coordinator keeps a short list of active nodes and the collections they own. It sends work to
+healthy nodes and waits only as long as the request allows. The final response lists both searched
+and unavailable collections.
+
+## Searching
+
+Each node supports:
+
+- Word search
+- Meaning-based search
+- A mix of both
+
+The local demo creates meaning data on the same machine, so it does not need an outside AI service.
+That part can be replaced with another model later.
+
+## Saving and recovery
+
+A node saves each accepted change before adding it to the live index. After a restart, it reads the
+saved changes and rebuilds what it needs. Saved files include checks that catch damaged data.
+
+The project also includes the main pieces needed to copy changes to another node, catch up an older
+copy, and restore from a saved snapshot. In the local demo, the two nodes own different collections.
+
+## Login and access
+
+In a real deployment, the coordinator checks the user's login token. It then creates a short-lived
+signed token for the search nodes. Each node checks that token and its own access rules before
+returning a result or document.
+
+Write requests need the `documents.write` permission. Audit logs use scrambled IDs and do not save
+user names, searches, or document text.
+
+## Monitoring
+
+The services report request counts, timing, errors, missing collections, and traces. They do not put
+search text, document text, login tokens, or user details in those reports.
+
+The local Docker setup sends metrics to Prometheus, dashboards to Grafana, and traces to Jaeger.
+
+## Code layout
+
+Search code stays separate from the HTTP and gRPC code. This keeps the main search behavior easy to
+test and lets the app change its network or storage code without rewriting ranking.

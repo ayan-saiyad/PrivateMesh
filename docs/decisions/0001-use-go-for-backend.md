@@ -1,21 +1,19 @@
-# 0001: Use Go for backend services
+# 0001: Use Go for the backend
 
 - Status: accepted
 - Date: 2026-09-11
 
-## Context
+## Why
 
-The system needs concurrent request fan-out, explicit cancellation, small deployable services, and
-performance that can be measured without a large runtime framework.
+The backend needs to search several nodes at once, stop work when a request ends, and run as small
+services.
 
-## Decision
+## Choice
 
-Backend services and the search core will be implemented in Go. Model inference may run in a
-separate service when vector retrieval is introduced.
+Use Go for the backend services and search code. A separate service can run a larger search model if
+one is added later.
 
-## Consequences
+## Result
 
-Go provides a consistent language for network services, persistence code, indexing algorithms, and
-benchmarks. Memory layout and allocation behavior require deliberate measurement, particularly in
-posting-list and vector-index implementations.
-
+Networking, saved data, search, tests, and benchmarks use one language. Memory use still needs to be
+measured as indexes grow.

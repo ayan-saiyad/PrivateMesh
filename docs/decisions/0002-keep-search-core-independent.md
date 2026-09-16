@@ -1,23 +1,18 @@
-# 0002: Keep the search core independent
+# 0002: Keep search code independent
 
 - Status: accepted
 - Date: 2026-09-11
 
-## Context
+## Why
 
-Indexing and ranking algorithms need deterministic unit tests and benchmarks. Coupling them to a
-web framework, RPC implementation, database, or model provider would make correctness and
-performance harder to isolate.
+Search and ranking should be easy to test without starting the full app.
 
-## Decision
+## Choice
 
-The search core will expose Go data types and interfaces without importing HTTP, gRPC, identity,
-database, or model-client packages. Adapters at the application boundary will translate external
-requests and persistence formats.
+Keep the main search code separate from HTTP, gRPC, login, databases, and outside model services.
+Small adapter packages connect those parts.
 
-## Consequences
+## Result
 
-The system requires explicit adapters, but algorithms can be tested in memory and benchmarked
-without network or storage noise. Replacing a transport or persistence implementation will not
-rewrite ranking logic.
-
+Search tests and benchmarks can run in memory. Network and storage code can change without rewriting
+the ranking code.

@@ -1,31 +1,32 @@
-# Build status
+# Project status
 
-The planned implementation is complete for the v1.0.0 project release.
+The work planned for version 1.0.0 is complete.
 
-## Search and storage
+## Search and saved data
 
-- [x] Unicode normalization, inverted indexing, BM25, and deterministic top-k retrieval
-- [x] Exact vector search, HNSW, reciprocal-rank fusion, and recall evaluation
-- [x] Immutable checksummed segments with atomic publication and merging
-- [x] Committed write-ahead log with replay, truncation, corruption detection, and recovery tests
+- [x] Search by words
+- [x] Search by meaning
+- [x] Combined search and result ranking
+- [x] Local document indexes
+- [x] Saved writes and restart recovery
+- [x] Checks for damaged saved data
 
-## Distribution and security
+## Multiple nodes and access
 
-- [x] Lease-backed node registry and collection catalog
-- [x] Deadline-aware fan-out, cancellation, streaming updates, and global result merging
-- [x] Explicit partial coverage when nodes are unavailable
-- [x] Primary election, replicated log offsets, WAL catch-up, and snapshot installation
-- [x] OIDC verification and short-lived signed principal propagation
-- [x] Node-local collection and document policy enforcement
-- [x] Content-free authorization audit records
-- [x] Health- and deadline-aware lexical, vector, and hybrid planning
+- [x] Track active search nodes and their collections
+- [x] Search several nodes at once
+- [x] Stop slow work when a request times out
+- [x] Report collections that could not be searched
+- [x] Choose a healthy copy and bring older copies up to date
+- [x] Check user login tokens
+- [x] Apply collection and document access rules on each node
+- [x] Keep audit logs without saving private content
 
-## Delivery and operations
+## App and deployment
 
-- [x] Search API and browser application connected to a live two-node topology
-- [x] OpenTelemetry traces and Prometheus metrics without protected payload attributes
-- [x] Provisioned Grafana and Jaeger views
-- [x] Concurrent load, node-loss, and durable-recovery checks
-- [x] Reproducible one-million-document benchmark
-- [x] Compose and Kubernetes deployments with an operator runbook
-- [x] Automated validation and version-tagged container publishing
+- [x] Browser search app and API
+- [x] Metrics, traces, Grafana, and Jaeger
+- [x] Load, node failure, and restart checks
+- [x] Repeatable one-million-document benchmark
+- [x] Docker Compose and Kubernetes setup
+- [x] Automatic checks and versioned container releases

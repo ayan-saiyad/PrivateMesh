@@ -63,7 +63,7 @@ type Engine struct {
 	collectionID string
 	log          *wal.Log
 	lexical      *search.Index
-	vectors      *vector.ExactIndex
+	vectors      vector.SearchIndex
 	embedder     vector.Embedder
 	authorizer   *authorization.Enforcer
 	documents    map[string]Document
@@ -80,7 +80,11 @@ func Open(ctx context.Context, options Options) (*Engine, error) {
 	if options.Embedder == nil || options.Authorizer == nil {
 		return nil, errors.New("embedder and authorizer are required")
 	}
-	vectors, err := vector.NewExactIndex(options.Dimensions)
+	vectors, err := vector.NewHNSWIndex(options.Dimensions, vector.HNSWOptions{
+		MaxConnections: 16,
+		EFConstruction: 100,
+		EFSearch:       40,
+	})
 	if err != nil {
 		return nil, err
 	}

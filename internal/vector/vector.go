@@ -8,6 +8,8 @@ import (
 )
 
 var (
+	// ErrVectorIDRequired indicates that an item has no usable identifier.
+	ErrVectorIDRequired = errors.New("vector ID is required")
 	// ErrDimensionMismatch indicates that a vector has an unexpected number of values.
 	ErrDimensionMismatch = errors.New("vector dimension mismatch")
 	// ErrInvalidVector indicates that a vector is empty, non-finite, or has zero magnitude.

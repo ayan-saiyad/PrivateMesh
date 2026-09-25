@@ -29,7 +29,7 @@ func NewExactIndex(dimensions int) (*ExactIndex, error) {
 func (i *ExactIndex) Upsert(item Item) error {
 	item.ID = strings.TrimSpace(item.ID)
 	if item.ID == "" {
-		return errors.New("vector ID is required")
+		return ErrVectorIDRequired
 	}
 	normalized, err := normalize(item.Vector, i.dimensions)
 	if err != nil {

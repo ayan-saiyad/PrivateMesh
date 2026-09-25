@@ -73,7 +73,7 @@ func NewHNSW(dimensions int, options HNSWOptions) (*HNSW, error) {
 func (h *HNSW) Add(item Item) error {
 	item.ID = strings.TrimSpace(item.ID)
 	if item.ID == "" {
-		return errors.New("vector ID is required")
+		return ErrVectorIDRequired
 	}
 	values, err := normalize(item.Vector, h.dimensions)
 	if err != nil {

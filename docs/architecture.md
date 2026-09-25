@@ -35,12 +35,12 @@ and unavailable collections.
 
 Each node supports:
 
-- Word search
-- Meaning-based search
-- A mix of both
+- Word search through a local BM25-style inverted index
+- Meaning-based search through a local HNSW approximate-nearest-neighbor index
+- A mix of both through reciprocal-rank fusion
 
-The local demo creates meaning data on the same machine, so it does not need an outside AI service.
-That part can be replaced with another model later.
+The local demo creates deterministic meaning data on the same machine, so it does not need an
+outside AI service. That embedder can be replaced with another model later.
 
 ## Saving and recovery
 

@@ -83,6 +83,41 @@ func TestHNSWNearestNeighbors(t *testing.T) {
 	}
 }
 
+func TestHNSWIndexUpsertsAndDeletes(t *testing.T) {
+	t.Parallel()
+
+	index, err := NewHNSWIndex(3, HNSWOptions{MaxConnections: 4, EFConstruction: 16, EFSearch: 12})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := index.Upsert(Item{ID: "east", Vector: []float32{1, 0, 0}}); err != nil {
+		t.Fatal(err)
+	}
+	if err := index.Upsert(Item{ID: "north", Vector: []float32{0, 1, 0}}); err != nil {
+		t.Fatal(err)
+	}
+	if err := index.Upsert(Item{ID: "east", Vector: []float32{0.9, 0.1, 0}}); err != nil {
+		t.Fatal(err)
+	}
+	results, err := index.Search([]float32{1, 0, 0}, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := resultIDs(results); !reflect.DeepEqual(got, []string{"east", "north"}) {
+		t.Fatalf("Search() IDs = %v", got)
+	}
+	if !index.Delete("east") || index.Delete("east") {
+		t.Fatal("Delete() did not report existence correctly")
+	}
+	results, err = index.Search([]float32{1, 0, 0}, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := resultIDs(results); !reflect.DeepEqual(got, []string{"north"}) {
+		t.Fatalf("Search() after Delete IDs = %v", got)
+	}
+}
+
 func TestHNSWRecallAgainstExactSearch(t *testing.T) {
 	t.Parallel()
 
